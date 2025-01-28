@@ -1,35 +1,29 @@
-BUILD_DIR := build
-MAIN_EXEC := server
+CXX = g++
+CXXFLAGS = -Wall -g -std=c++11
+LDFLAGS = -lssl -lcrypto
 
-CMAKE := cmake
-MAKE := make
+SRC_DIR = src
+BUILD_DIR = build
+
+SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/server.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
+
+TARGET = $(BUILD_DIR)/server
+
+all: $(BUILD_DIR) $(TARGET)
 
 $(BUILD_DIR):
-	@echo "Создание директории $(BUILD_DIR)"
 	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/Makefile: $(BUILD_DIR)
-	@echo "Запуск CMake..."
-	cd $(BUILD_DIR) && $(CMAKE) ..
+$(TARGET): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
-all: $(BUILD_DIR)/Makefile
-	@echo "Сборка проекта..."
-	cd $(BUILD_DIR) && $(MAKE)
-
-run: all
-	@echo "Запуск $(MAIN_EXEC)..."
-	cd $(BUILD_DIR) && ./$(MAIN_EXEC)
-
-build_and_run: all run
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@echo "Очистка..."
-	rm -rf $(BUILD_DIR)
+	rm -f $(OBJECTS) $(TARGET)
 
-clear: clean
-
-.PHONY: all run clean build_and_run clear
-
-
-
+run: all
+	./$(TARGET)
 

@@ -3,46 +3,44 @@
 
 #include <iostream>
 #include <string>
-#include <map>
-#include <netinet/in.h>
 #include <thread>
-#include <mutex>
-#include <queue>
 #include <unistd.h>
-#include <cstring>
-#include <chrono>
-#include <condition_variable>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <vector>
+#include <mutex>
+#include <stdexcept>
+#include <openssl/evp.h>
+#include <iomanip>
+#include <sstream>
+#include <atomic>
+#include <queue>
+#include <csignal>
+#include <cstdlib>
+#include <algorithm>
 
-#define MAX_CLIENTS 10
 
-class Server {
-public:
-    Server(int port);
-    void start();
+using namespace std;
 
-private:
-    int server_fd, opt, port;
-    struct sockaddr_in address;
-    socklen_t addrlen;
 
-    std::map<std::string, int> clients; 
-    std::mutex clients_mutex;
+extern vector<string> message_history;
+extern mutex history_mutex;
 
-    std::queue<std::pair<std::string, std::string>> task_queue; 
-    std::mutex task_mutex;
-    std::condition_variable task_queue_cv;
+#define MD5_DIGEST_LENGTH 16
+extern unsigned char targetMD5[MD5_DIGEST_LENGTH];
 
-    void handleClient(int client_socket);
-    void processTasks();
-    void processTask(const std::string& hash, const std::string& client_id);
-    void inputLoop(); 
-};
+
+extern int server_socket_global;
+extern vector<int> clients_global;
+extern atomic<bool> server_running;
+
+
+void computeMD5FromString(const string &str, unsigned char *result);
+string md5ToString(unsigned char *md);
+void create_socket(int& socket_fd);
+void bind_socket(int socket_fd, sockaddr_in& server_addr);
+void listen_socket(int socket_fd);
+void signalHandler(int signum);
 
 #endif 
-
-
-
-
-
-
 
